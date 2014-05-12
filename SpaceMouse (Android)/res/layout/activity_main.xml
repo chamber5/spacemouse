@@ -8,8 +8,17 @@
 
     <!-- Dolny panel z wartościami z sensorów -->
 
+
+    <Button
+        android:id="@+id/recorder"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_above="@+id/sensordata"
+        android:layout_centerHorizontal="true"
+        android:text="@string/record" />
+    
     <RelativeLayout
-        android:id="@+id/relativeLayout1"
+        android:id="@+id/sensordata"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

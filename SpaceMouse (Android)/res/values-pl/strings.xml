@@ -9,5 +9,6 @@
     <string name="z">z</string>
     <string name="accelerometer">Akcelerometr</string>
     <string name="gyroscope">Żyroskop</string>
+    <string name="record">Rejestruj</string>
 
 </resources>
