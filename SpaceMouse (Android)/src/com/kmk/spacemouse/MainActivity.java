@@ -1,10 +1,15 @@
 package com.kmk.spacemouse;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import com.kmk.spacemouse.R;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,59 +20,38 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener
 {
-	// Stałe
-	public static final int UPDATE_VALUES = 1;
+	// Kontekst
+	Context context = this;
 	
 	// Status rejestracji
 	boolean isRecording = false;
-	
-	// Sumy i ilość pomiarów
-	double accXSum, accYSum, accZSum;
-	double gyrXSum, gyrYSum, gyrZSum;
-	
-	
-	int accDataCount;
-	int gyrDataCount;
-	
-	// Timer
-	Timer timer;
-	long delay = 50;
-	
-	// Handler do aktualizacji UI
-	Handler handler;
 	
 	// Menedżer sensorów
 	private SensorManager sensorManager;
 	private Sensor accelerometer;
 	private Sensor gyroscope;
 	
+	// Socket do przesyłania danych
+	private Socket socket;
+	
 	// Metody odpowiedzialne za nagrywanie położenia
 	
 	public void startRecording()
 	{
-		reset();
 		isRecording = true;
 	}
 	
 	public void stopRecording()
 	{
 		isRecording = false;
-	}
-	
-	// Resetowanie pomiarów
-	public void reset()
-	{
-		accDataCount = 0;
-		gyrDataCount = 0;
-		
-		accXSum = 0; accYSum = 0; accZSum = 0;
-		gyrXSum = 0; gyrYSum = 0; gyrZSum = 0;
 	}
 	
 	// Nadpisanie metod klasy Activity (obsługa cyklu życia aktywności)
@@ -112,42 +96,39 @@ public class MainActivity extends Activity implements SensorEventListener
 			}
 		});
 		
-		// Handler aktualizujący UI
-		handler = new Handler()
+		// Łączenie i rozłączanie
+		final Button connection = (Button) findViewById(R.id.connection);
+		connection.setOnClickListener(new OnClickListener()
 		{
 			@Override
-			public void handleMessage(Message msg)
+			public void onClick(View v)
 			{
-				if(msg.what == UPDATE_VALUES)
+				try
 				{
-
-					TextView accX = (TextView) findViewById(R.id.accelerometer_x);
-					TextView accY = (TextView) findViewById(R.id.accelerometer_y);
-					TextView accZ = (TextView) findViewById(R.id.accelerometer_z);
-					
-					TextView gyrX = (TextView) findViewById(R.id.gyroscope_x);
-					TextView gyrY = (TextView) findViewById(R.id.gyroscope_y);
-					TextView gyrZ = (TextView) findViewById(R.id.gyroscope_z);
-					
-					
-					if(accDataCount > 0 && gyrDataCount > 0)
+					if(socket == null)
 					{
-						
-						accX.setText(Math.round(1000.0*accXSum/(double) accDataCount)/1000.0 + " m/s²");
-						accY.setText(Math.round(1000.0*accYSum/(double) accDataCount)/1000.0 + " m/s²");
-						accZ.setText(Math.round(1000.0*accZSum/(double) accDataCount)/1000.0 + " m/s²");
-						
-						gyrX.setText(Math.round(1000.0*gyrXSum/(double) gyrDataCount)/1000.0 + " rad/s");
-						gyrY.setText(Math.round(1000.0*gyrYSum/(double) gyrDataCount)/1000.0 + " rad/s");
-						gyrZ.setText(Math.round(1000.0*gyrZSum/(double) gyrDataCount)/1000.0 + " rad/s");
+						String ip = ((EditText) findViewById(R.id.ip)).getText().toString();
+						socket = new Socket(ip, 32200);
 					}
 					
-					reset();
+					else
+					{
+						socket.close();
+						socket = null;
+					}
 				}
 				
-				super.handleMessage(msg);
+				catch (IOException e)
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(context);
+					builder.setTitle(R.string.cantConnectTitle);
+					builder.setMessage(R.string.cantConnectMessage);
+					builder.setPositiveButton("OK", null);
+					
+					builder.show();
+				}
 			}
-		};
+		});
 	}
 	
 	@Override
@@ -158,10 +139,6 @@ public class MainActivity extends Activity implements SensorEventListener
 		// Wyrejestrowujemy sensory
 		stopRecording();
 		sensorManager.unregisterListener(this);
-		
-		// Usuwamy timera
-		timer.cancel();
-		timer.purge();
 	}
 	
 	@Override
@@ -172,18 +149,6 @@ public class MainActivity extends Activity implements SensorEventListener
 		// Rejestrujemy sensory jeszcze raz
 		sensorManager.registerListener(this, accelerometer, 50000);
 		sensorManager.registerListener(this, gyroscope, 50000);
-		
-		// Tworzymy timera
-		timer = new Timer("avgCounter");
-		timer.scheduleAtFixedRate(new TimerTask()
-		{
-			public void run()
-			{
-				Message msg = handler.obtainMessage();
-				msg.what = UPDATE_VALUES;
-				handler.sendMessage(msg);
-			}
-		}, delay, delay);
 	}
 	
 	// Implementacja interfejsu SensorEventListener
@@ -193,43 +158,21 @@ public class MainActivity extends Activity implements SensorEventListener
 	{
 		Sensor sensor = event.sensor;
 		
+		float[] values;
+		
 		if(sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
 		{
-			accXSum += event.values[0];
-			accYSum += event.values[1];
-			accZSum += event.values[2];
-			
-			accDataCount++;
+			values = event.values;
 		}
 		
 		else if(sensor.getType() == Sensor.TYPE_GYROSCOPE)
 		{
-			gyrXSum += event.values[0];
-			gyrYSum += event.values[1];
-			gyrZSum += event.values[2];
-			
-			gyrDataCount++;
+			values = event.values;
 		}
 		
-		else
-		{
-			return;  // Innych sensorów nie potrzebuję
-		}
+		else return;
 		
-		// Proces rejestracji
-		
-		if(!isRecording)
-			return;
-		
-		if(sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)  // Przemieszczenie
-		{
-			
-		}
-		
-		if(sensor.getType() == Sensor.TYPE_GYROSCOPE)  // Obrót
-		{
-			
-		}
+		// Przesłanie danych przez Wi-Fi
 	}
 
 	@Override

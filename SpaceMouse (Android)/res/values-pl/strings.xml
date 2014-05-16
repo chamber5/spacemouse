@@ -3,12 +3,12 @@
 
     <string name="app_name">SpaceMouse</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="x">x</string>
-    <string name="y">y</string>
-    <string name="z">z</string>
-    <string name="accelerometer">Akcelerometr</string>
-    <string name="gyroscope">Żyroskop</string>
+    <string name="action_settings">Ustawienia</string>
     <string name="record">Rejestruj</string>
-
+    <string name="ip">Adres IP</string>
+    <string name="connect">Połącz</string>
+    <string name="disconnect">Rozłącz</string>
+    <string name="cantConnectTitle">Błąd połączenia</string>
+    <string name="cantConnectMessage">Nie można połączyć z komputerem. Proszę sprawdzić adres IP i połączenie internetowe.</string>
+    
 </resources>

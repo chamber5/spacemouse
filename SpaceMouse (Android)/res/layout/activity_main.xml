@@ -6,153 +6,31 @@
     tools:context="com.kmk.spacemouse.MainActivity"
     tools:ignore="MergeRootFrame" >
 
-    <!-- Dolny panel z wartościami z sensorów -->
-
-
     <Button
         android:id="@+id/recorder"
         android:layout_width="200dp"
         android:layout_height="100dp"
-        android:layout_above="@+id/sensordata"
-        android:layout_centerHorizontal="true"
-        android:text="@string/record" />
-    
-    <RelativeLayout
-        android:id="@+id/sensordata"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#eeeeee"
-        android:padding="10dp" >
-		
-        <!-- Akcelerometr - etykiety -->
-        <TextView
-            android:id="@+id/accelerometer_header"
-        	android:textStyle="bold"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:text="@string/accelerometer" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp"
+        android:text="@string/record" />
 
-        <TextView
-            android:id="@+id/accelerometer_label_x"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/accelerometer_header"
-            android:layout_below="@+id/accelerometer_header"
-            android:text="@string/x" />
+    <Button
+        android:id="@+id/connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/editText1"
+        android:text="@string/connect" />
 
-        <TextView
-            android:id="@+id/accelerometer_label_y"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/accelerometer_header"
-            android:layout_below="@+id/accelerometer_label_x"
-            android:text="@string/y" />
-
-        <TextView
-            android:id="@+id/accelerometer_label_z"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/accelerometer_header"
-            android:layout_below="@+id/accelerometer_label_y"
-            android:text="@string/z" />
-
-        <!-- Akcelerometr - wartości -->
-        
-        <TextView
-            android:id="@+id/accelerometer_x"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/accelerometer_label_x"
-            android:layout_toRightOf="@+id/accelerometer_label_x"
-            android:gravity="right" />
-        
-        <TextView
-            android:id="@+id/accelerometer_y"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/accelerometer_label_y"
-            android:layout_toRightOf="@+id/accelerometer_label_y"
-            android:gravity="right" />
-
-        <TextView
-            android:id="@+id/accelerometer_z"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/accelerometer_label_z"
-            android:layout_toRightOf="@+id/accelerometer_label_z"
-            android:gravity="right" />
-        
-        <!-- Żyroskop - etykiety -->
-        
-        <TextView
-            android:id="@+id/gyroscope_header"
-        	android:textStyle="bold"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/accelerometer_header"
-            android:text="@string/gyroscope" />
-
-        <TextView
-            android:id="@+id/gyroscope_label_x"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/gyroscope_header"
-            android:layout_below="@+id/gyroscope_header"
-            android:text="@string/x" />
-
-        <TextView
-            android:id="@+id/gyroscope_label_y"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/gyroscope_header"
-            android:layout_below="@+id/gyroscope_label_x"
-            android:text="@string/y" />
-
-        <TextView
-            android:id="@+id/gyroscope_label_z"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/gyroscope_header"
-            android:layout_below="@+id/gyroscope_label_y"
-            android:text="@string/z" />
-        
-        <!-- Żyroskop - wartości -->
-        
-        <TextView
-            android:id="@+id/gyroscope_x"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/gyroscope_label_x"
-            android:layout_toRightOf="@+id/gyroscope_label_x"
-            android:gravity="right" />
-        
-        <TextView
-            android:id="@+id/gyroscope_y"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/gyroscope_label_y"
-            android:layout_toRightOf="@+id/gyroscope_label_y"
-            android:gravity="right" />
-
-        <TextView
-            android:id="@+id/gyroscope_z"
-            android:layout_width="120dp"
-            android:layout_marginLeft="10dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/gyroscope_label_z"
-            android:layout_toRightOf="@+id/gyroscope_label_z"
-            android:gravity="right" />
-        
-    </RelativeLayout>
+    <EditText
+        android:id="@+id/ip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button1"
+        android:layout_alignParentLeft="true"
+        android:ems="10"
+        android:hint="@string/ip" />
 
 </RelativeLayout>
