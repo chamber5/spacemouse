@@ -28,9 +28,13 @@
         android:id="@+id/ip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button1"
+        android:layout_alignBottom="@+id/connection"
         android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/connection"
         android:ems="10"
-        android:hint="@string/ip" />
+        android:hint="@string/ip" >
+
+        <requestFocus />
+    </EditText>
 
 </RelativeLayout>

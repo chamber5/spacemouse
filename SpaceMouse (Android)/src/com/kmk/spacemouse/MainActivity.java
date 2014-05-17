@@ -1,6 +1,7 @@
 package com.kmk.spacemouse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +29,14 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener
 {
+	// Stałe
+	public static final int CONNECTION_ERROR = 0x1001;
+	public static final int CONNECTED = 0x1002;
+	public static final int DISCONNECTED = 0x1003;
+	
+	// Handler
+	Handler handler;
+	
 	// Kontekst
 	Context context = this;
 	
@@ -39,8 +48,9 @@ public class MainActivity extends Activity implements SensorEventListener
 	private Sensor accelerometer;
 	private Sensor gyroscope;
 	
-	// Socket do przesyłania danych
+	// Socket do przesyłania danych i PrintWriter
 	private Socket socket;
+	private PrintWriter out;
 	
 	// Metody odpowiedzialne za nagrywanie położenia
 	
@@ -75,6 +85,39 @@ public class MainActivity extends Activity implements SensorEventListener
 		gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		sensorManager.registerListener(this, gyroscope, 50000);
 		
+		// Tymczasowo - ustawienie adresu IP
+		((EditText) findViewById(R.id.ip)).setText("192.168.252.101");
+		
+		// Handler
+		handler = new Handler()
+		{
+			public void handleMessage(Message msg)
+			{
+				if(msg.what == CONNECTION_ERROR)
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(context);
+					builder.setTitle(R.string.cantConnectTitle);
+					builder.setMessage(R.string.cantConnectMessage);
+					builder.setPositiveButton("OK", null);
+					
+					builder.show();
+				}
+				
+				else if(msg.what == CONNECTED)
+				{
+					((EditText) findViewById(R.id.ip)).setEnabled(false);
+					((Button) findViewById(R.id.connection)).setText(R.string.disconnect);
+				}
+				
+				else if(msg.what == DISCONNECTED)
+				{
+					((EditText) findViewById(R.id.ip)).setEnabled(true);
+					((Button) findViewById(R.id.connection)).setText(R.string.connect);
+				}
+			}
+		};
+		
+		
 		// Wykrywanie trzymania przycisku
 		final Button recorder = (Button) findViewById(R.id.recorder);
 		recorder.setOnTouchListener(new OnTouchListener()
@@ -103,29 +146,59 @@ public class MainActivity extends Activity implements SensorEventListener
 			@Override
 			public void onClick(View v)
 			{
-				try
+				if(socket == null)
 				{
-					if(socket == null)
+					new Thread(new Runnable()
 					{
-						String ip = ((EditText) findViewById(R.id.ip)).getText().toString();
-						socket = new Socket(ip, 32200);
-					}
-					
-					else
-					{
-						socket.close();
-						socket = null;
-					}
+						public void run()
+						{
+							try
+							{
+								String ip = ((EditText) findViewById(R.id.ip)).getText().toString();
+								socket = new Socket(ip, 32200);
+								
+								Message msg = new Message();
+								msg.what = CONNECTED;
+								handler.sendMessage(msg);
+								
+								out = new PrintWriter(socket.getOutputStream(), true);
+								out.write("Hello!\n");
+								out.flush();
+							}
+							catch(IOException ex)
+							{
+								Message msg = new Message();
+								msg.what = CONNECTION_ERROR;
+								handler.sendMessage(msg);
+								
+								throw new Error(ex.getMessage());
+							}
+						}
+					}).start();
 				}
 				
-				catch (IOException e)
+				else
 				{
-					AlertDialog.Builder builder = new AlertDialog.Builder(context);
-					builder.setTitle(R.string.cantConnectTitle);
-					builder.setMessage(R.string.cantConnectMessage);
-					builder.setPositiveButton("OK", null);
-					
-					builder.show();
+					try
+					{
+						out.close();
+						out = null;
+						
+						socket.close();
+						socket = null;
+						
+						Message msg = new Message();
+						msg.what = DISCONNECTED;
+						handler.sendMessage(msg);
+					}
+					catch(IOException ex)
+					{
+						Message msg = new Message();
+						msg.what = CONNECTION_ERROR;
+						handler.handleMessage(msg);
+						
+						throw new Error(ex.getMessage());
+					}
 				}
 			}
 		});
@@ -157,22 +230,25 @@ public class MainActivity extends Activity implements SensorEventListener
 	public void onSensorChanged(SensorEvent event)
 	{
 		Sensor sensor = event.sensor;
-		
-		float[] values;
+		String msg = "";
 		
 		if(sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
 		{
-			values = event.values;
+			msg = isRecording + " acc " + event.values[0] + " " + event.values[1] + " " + event.values[2] + "\n";
 		}
 		
 		else if(sensor.getType() == Sensor.TYPE_GYROSCOPE)
 		{
-			values = event.values;
+			msg = isRecording + " gyr " + event.values[0] + " " + event.values[1] + " " + event.values[2] + "\n";
 		}
 		
 		else return;
 		
-		// Przesłanie danych przez Wi-Fi
+		if(out != null)
+		{
+			out.write(msg);
+			out.flush();
+		}
 	}
 
 	@Override
