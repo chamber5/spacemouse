@@ -1,0 +1,13 @@
+<html>
+<head>
+</head>
+<body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io('http://localhost:32200');
+    socket.emit('msg', 'test test test');
+</script>
+
+</body>
+</html>
